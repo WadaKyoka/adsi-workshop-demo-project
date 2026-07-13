@@ -8,7 +8,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-screen bg-green-50 -m-6 p-6">
       <div>
         <h1 className="text-2xl font-bold">ダッシュボード</h1>
         {user && (

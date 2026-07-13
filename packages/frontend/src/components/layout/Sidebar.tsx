@@ -42,7 +42,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>メニュー</SidebarGroupLabel>
+          <SidebarGroupLabel className="bg-blue-100 rounded px-2">メニュー</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {commonItems.map((item) => (
@@ -59,7 +59,7 @@ export function AppSidebar() {
 
         {user?.isManager && (
           <SidebarGroup>
-            <SidebarGroupLabel>上長メニュー</SidebarGroupLabel>
+            <SidebarGroupLabel className="bg-amber-100 rounded px-2">上長メニュー</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {managerItems.map((item) => (
@@ -77,7 +77,7 @@ export function AppSidebar() {
 
         {user?.role === "ADMIN" && (
           <SidebarGroup>
-            <SidebarGroupLabel>管理</SidebarGroupLabel>
+            <SidebarGroupLabel className="bg-purple-100 rounded px-2">管理</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems.map((item) => (
