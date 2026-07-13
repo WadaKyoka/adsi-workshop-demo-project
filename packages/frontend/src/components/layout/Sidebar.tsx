@@ -1,6 +1,16 @@
 "use client";
 
-import { BarChart3, Building2, CalendarDays, CheckSquare, Clock, FileEdit, History, LayoutDashboard, Users } from "lucide-react";
+import {
+  BarChart3,
+  Building2,
+  CalendarDays,
+  CheckSquare,
+  Clock,
+  FileEdit,
+  History,
+  LayoutDashboard,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import {
   Sidebar,
@@ -62,7 +72,9 @@ export function AppSidebar() {
 
         {user?.isManager && (
           <SidebarGroup>
-            <SidebarGroupLabel className="bg-amber-100 rounded px-2">上長メニュー</SidebarGroupLabel>
+            <SidebarGroupLabel className="bg-amber-100 rounded px-2">
+              上長メニュー
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {managerItems.map((item) => (

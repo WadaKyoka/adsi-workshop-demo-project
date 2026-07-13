@@ -160,7 +160,7 @@ public class LeaveServiceImpl implements LeaveService {
 
     @Override
     public LeaveBalanceResponse getBalance(UUID employeeId) {
-        var employee = findEmployeeOrThrow(employeeId);
+        findEmployeeOrThrow(employeeId);
         int fiscalYear = computeCurrentFiscalYear();
         var balance = leaveBalanceRepository
                 .findByEmployeeIdAndFiscalYear(employeeId, fiscalYear)
