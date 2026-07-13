@@ -350,6 +350,49 @@ class AttendanceIntegrationTest {
     }
 
     @Test
+    @DisplayName("退勤打刻時にメモを指定しなければ出勤時のメモが維持される")
+    void clockOut_withoutMemo_preservesExistingMemo() throws Exception {
+        mockMvc.perform(post("/api/attendance/clock-in")
+                .session(employeeSession)
+                .with(csrf())
+                .param("employeeId", employeeId.toString())
+                .param("memo", "客先直行"))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/attendance/clock-out")
+                .session(employeeSession)
+                .with(csrf())
+                .param("employeeId", employeeId.toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.memo").value("客先直行"));
+    }
+
+    @Test
+    @DisplayName("メモが100文字ちょうどなら正常に打刻できる")
+    void clockIn_memo100chars_succeeds() throws Exception {
+        var memo100 = "あ".repeat(100);
+        mockMvc.perform(post("/api/attendance/clock-in")
+                .session(employeeSession)
+                .with(csrf())
+                .param("employeeId", employeeId.toString())
+                .param("memo", memo100))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.memo").value(memo100));
+    }
+
+    @Test
+    @DisplayName("メモが101文字以上だとバリデーションエラー")
+    void clockIn_memo101chars_returns400() throws Exception {
+        var memo101 = "あ".repeat(101);
+        mockMvc.perform(post("/api/attendance/clock-in")
+                .session(employeeSession)
+                .with(csrf())
+                .param("employeeId", employeeId.toString())
+                .param("memo", memo101))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("未認証で出勤打刻すると401が返される")
     void clockIn_unauthenticated_returns401() throws Exception {
         mockMvc.perform(post("/api/attendance/clock-in")

@@ -223,6 +223,29 @@ class AttendanceServiceTest {
         }
 
         @Test
+        @DisplayName("退勤打刻時にmemo=nullなら既存メモが維持される")
+        void clockOut_withNullMemo_preservesExistingMemo() {
+            // Arrange
+            var openRecord = AttendanceRecord.builder()
+                    .id(UUID.randomUUID())
+                    .employee(employee)
+                    .workDate(TODAY_TOKYO)
+                    .clockIn(Instant.parse("2025-01-14T23:00:00Z"))
+                    .memo("客先直行")
+                    .build();
+            when(attendanceRepository.findByEmployeeIdAndWorkDateAndClockOutIsNull(employee.getId(), TODAY_TOKYO))
+                    .thenReturn(Optional.of(openRecord));
+            when(attendanceRepository.save(any(AttendanceRecord.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            // Act
+            var result = service.clockOut(employee.getId(), null);
+
+            // Assert
+            assertThat(result.memo()).isEqualTo("客先直行");
+        }
+
+        @Test
         @DisplayName("出勤中レコードがない場合は409エラー")
         void clockOut_noClockedIn_throwsConflict() {
             // Arrange
