@@ -44,6 +44,9 @@ export function TodayRecords() {
               <span className="font-medium">
                 {record.clockOut ? formatTime(record.clockOut) : "--:--"}
               </span>
+              {record.memo && (
+                <span className="text-muted-foreground truncate max-w-[200px]">{record.memo}</span>
+              )}
             </div>
             {record.corrected && <Badge variant="outline">修正済み</Badge>}
           </div>

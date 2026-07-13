@@ -319,6 +319,37 @@ class AttendanceIntegrationTest {
     }
 
     @Test
+    @DisplayName("出勤打刻にメモを付けるとレスポンスにmemoが含まれる")
+    void clockIn_withMemo_returnsMemo() throws Exception {
+        mockMvc.perform(post("/api/attendance/clock-in")
+                .session(employeeSession)
+                .with(csrf())
+                .param("employeeId", employeeId.toString())
+                .param("memo", "客先直行"))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.memo").value("客先直行"));
+    }
+
+    @Test
+    @DisplayName("退勤打刻時にメモを上書きできる")
+    void clockOut_withMemo_overwritesMemo() throws Exception {
+        mockMvc.perform(post("/api/attendance/clock-in")
+                .session(employeeSession)
+                .with(csrf())
+                .param("employeeId", employeeId.toString())
+                .param("memo", "客先直行"))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/attendance/clock-out")
+                .session(employeeSession)
+                .with(csrf())
+                .param("employeeId", employeeId.toString())
+                .param("memo", "午後有給"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.memo").value("午後有給"));
+    }
+
+    @Test
     @DisplayName("未認証で出勤打刻すると401が返される")
     void clockIn_unauthenticated_returns401() throws Exception {
         mockMvc.perform(post("/api/attendance/clock-in")

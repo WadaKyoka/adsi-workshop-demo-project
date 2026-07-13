@@ -6,6 +6,7 @@ import com.example.attendance.attendance.dto.TeamMemberSummaryResponse;
 import com.example.attendance.attendance.dto.TodayStatusResponse;
 import com.example.attendance.attendance.service.AttendanceService;
 import org.springframework.http.HttpStatus;
+import jakarta.validation.constraints.Size;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,13 +29,17 @@ public class AttendanceController {
 
     @PostMapping("/clock-in")
     @ResponseStatus(HttpStatus.CREATED)
-    public AttendanceRecordResponse clockIn(@RequestParam UUID employeeId) {
-        return attendanceService.clockIn(employeeId);
+    public AttendanceRecordResponse clockIn(
+            @RequestParam UUID employeeId,
+            @RequestParam(required = false) @Size(max = 100) String memo) {
+        return attendanceService.clockIn(employeeId, memo);
     }
 
     @PostMapping("/clock-out")
-    public AttendanceRecordResponse clockOut(@RequestParam UUID employeeId) {
-        return attendanceService.clockOut(employeeId);
+    public AttendanceRecordResponse clockOut(
+            @RequestParam UUID employeeId,
+            @RequestParam(required = false) @Size(max = 100) String memo) {
+        return attendanceService.clockOut(employeeId, memo);
     }
 
     @GetMapping("/today")

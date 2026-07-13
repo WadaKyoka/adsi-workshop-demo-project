@@ -15,6 +15,7 @@ public record PendingCorrectionResponse(
     Instant correctedClockIn,
     Instant correctedClockOut,
     String reason,
+    String memo,
     Long version,
     Instant createdAt
 ) {
@@ -29,6 +30,7 @@ public record PendingCorrectionResponse(
             correction.getCorrectedClockIn(),
             correction.getCorrectedClockOut(),
             correction.getReason(),
+            correction.getMemo(),
             correction.getVersion(),
             correction.getCreatedAt()
         );

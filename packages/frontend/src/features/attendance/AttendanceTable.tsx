@@ -19,6 +19,11 @@ function hasCorrected(day: DailyAttendanceResponse): boolean {
   return day.records.some((r) => r.corrected);
 }
 
+function getMemo(day: DailyAttendanceResponse): string | null {
+  const memos = day.records.map((r) => r.memo).filter(Boolean);
+  return memos.length > 0 ? memos.join(", ") : null;
+}
+
 const columns: Column<DailyAttendanceResponse>[] = [
   {
     key: "date",
@@ -49,6 +54,14 @@ const columns: Column<DailyAttendanceResponse>[] = [
     key: "overtimeMinutes",
     header: "残業",
     render: (day) => (day.overtimeMinutes > 0 ? formatMinutes(day.overtimeMinutes) : "-"),
+  },
+  {
+    key: "memo",
+    header: "メモ",
+    render: (day) => {
+      const memo = getMemo(day);
+      return memo ? <span className="truncate max-w-[150px] inline-block">{memo}</span> : null;
+    },
   },
   {
     key: "corrected",

@@ -73,9 +73,10 @@ class AttendanceControllerTest {
                 LocalDate.of(2025, 1, 15),
                 Instant.parse("2025-01-15T00:00:00Z"),
                 null,
-                false
+                false,
+                null
         );
-        when(attendanceService.clockIn(EMPLOYEE_ID)).thenReturn(response);
+        when(attendanceService.clockIn(EMPLOYEE_ID, null)).thenReturn(response);
 
         // Act & Assert
         mockMvc.perform(post("/api/attendance/clock-in")
@@ -83,6 +84,28 @@ class AttendanceControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.workDate").value("2025-01-15"))
                 .andExpect(jsonPath("$.clockOut").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("POST /api/attendance/clock-in にメモ付きで201を返す")
+    void clockIn_withMemo_returns201WithMemo() throws Exception {
+        // Arrange
+        var response = new AttendanceRecordResponse(
+                UUID.randomUUID(),
+                LocalDate.of(2025, 1, 15),
+                Instant.parse("2025-01-15T00:00:00Z"),
+                null,
+                false,
+                "客先直行"
+        );
+        when(attendanceService.clockIn(EMPLOYEE_ID, "客先直行")).thenReturn(response);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/attendance/clock-in")
+                        .param("employeeId", EMPLOYEE_ID.toString())
+                        .param("memo", "客先直行"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.memo").value("客先直行"));
     }
 
     @Test
@@ -94,15 +117,38 @@ class AttendanceControllerTest {
                 LocalDate.of(2025, 1, 15),
                 Instant.parse("2025-01-14T23:00:00Z"),
                 Instant.parse("2025-01-15T08:00:00Z"),
-                false
+                false,
+                null
         );
-        when(attendanceService.clockOut(EMPLOYEE_ID)).thenReturn(response);
+        when(attendanceService.clockOut(EMPLOYEE_ID, null)).thenReturn(response);
 
         // Act & Assert
         mockMvc.perform(post("/api/attendance/clock-out")
                         .param("employeeId", EMPLOYEE_ID.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clockOut").exists());
+    }
+
+    @Test
+    @DisplayName("POST /api/attendance/clock-out にメモ付きで200を返す")
+    void clockOut_withMemo_returns200WithMemo() throws Exception {
+        // Arrange
+        var response = new AttendanceRecordResponse(
+                UUID.randomUUID(),
+                LocalDate.of(2025, 1, 15),
+                Instant.parse("2025-01-14T23:00:00Z"),
+                Instant.parse("2025-01-15T08:00:00Z"),
+                false,
+                "午後有給"
+        );
+        when(attendanceService.clockOut(EMPLOYEE_ID, "午後有給")).thenReturn(response);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/attendance/clock-out")
+                        .param("employeeId", EMPLOYEE_ID.toString())
+                        .param("memo", "午後有給"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.memo").value("午後有給"));
     }
 
     @Test
