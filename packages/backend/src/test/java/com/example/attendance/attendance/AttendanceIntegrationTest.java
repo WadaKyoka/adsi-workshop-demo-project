@@ -143,6 +143,45 @@ class AttendanceIntegrationTest {
     }
 
     @Test
+    @DisplayName("ATT-04: 出勤中に再度出勤打刻すると409が返される")
+    void clockIn_alreadyClockedIn_returns409() throws Exception {
+        mockMvc.perform(post("/api/attendance/clock-in")
+                .session(employeeSession)
+                .with(csrf())
+                .param("employeeId", employeeId.toString()))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/attendance/clock-in")
+                .session(employeeSession)
+                .with(csrf())
+                .param("employeeId", employeeId.toString()))
+            .andExpect(status().isConflict());
+    }
+
+    @Test
+    @DisplayName("ATT-04: 出勤中に再出勤が拒否された後も退勤は正常にできる")
+    void clockOut_afterDuplicateClockInRejected_succeeds() throws Exception {
+        mockMvc.perform(post("/api/attendance/clock-in")
+                .session(employeeSession)
+                .with(csrf())
+                .param("employeeId", employeeId.toString()))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/attendance/clock-in")
+                .session(employeeSession)
+                .with(csrf())
+                .param("employeeId", employeeId.toString()))
+            .andExpect(status().isConflict());
+
+        mockMvc.perform(post("/api/attendance/clock-out")
+                .session(employeeSession)
+                .with(csrf())
+                .param("employeeId", employeeId.toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.clockOut").exists());
+    }
+
+    @Test
     @DisplayName("出勤→退勤後に再度出勤できる")
     void clockInAgain_afterClockOut_succeeds() throws Exception {
         mockMvc.perform(post("/api/attendance/clock-in")

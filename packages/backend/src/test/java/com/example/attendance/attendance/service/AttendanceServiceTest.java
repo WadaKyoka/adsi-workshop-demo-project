@@ -83,6 +83,8 @@ class AttendanceServiceTest {
             when(employeeRepository.findById(employee.getId())).thenReturn(Optional.of(employee));
             when(attendanceRepository.save(any(AttendanceRecord.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
+            when(attendanceRepository.findByEmployeeIdAndWorkDate(employee.getId(), TODAY_TOKYO))
+                    .thenReturn(List.of());
 
             // Act
             var result = service.clockIn(employee.getId());
@@ -95,6 +97,52 @@ class AttendanceServiceTest {
             var captor = ArgumentCaptor.forClass(AttendanceRecord.class);
             verify(attendanceRepository).save(captor.capture());
             assertThat(captor.getValue().getEmployee().getId()).isEqualTo(employee.getId());
+        }
+
+        @Test
+        @DisplayName("ATT-04: 出勤中に再度出勤打刻するとConflictエラーになる")
+        void clockIn_alreadyClockedIn_throwsConflict() {
+            // Arrange
+            var openRecord = AttendanceRecord.builder()
+                    .id(UUID.randomUUID())
+                    .employee(employee)
+                    .workDate(TODAY_TOKYO)
+                    .clockIn(Instant.parse("2025-01-14T23:00:00Z"))
+                    .build();
+            when(employeeRepository.findById(employee.getId())).thenReturn(Optional.of(employee));
+            when(attendanceRepository.findByEmployeeIdAndWorkDate(employee.getId(), TODAY_TOKYO))
+                    .thenReturn(List.of(openRecord));
+
+            // Act & Assert
+            assertThatThrownBy(() -> service.clockIn(employee.getId()))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .hasMessageContaining("Already clocked in");
+        }
+
+        @Test
+        @DisplayName("ATT-06: 退勤後に再度出勤打刻ができる")
+        void clockIn_afterClockOut_succeeds() {
+            // Arrange
+            var closedRecord = AttendanceRecord.builder()
+                    .id(UUID.randomUUID())
+                    .employee(employee)
+                    .workDate(TODAY_TOKYO)
+                    .clockIn(Instant.parse("2025-01-14T23:00:00Z"))
+                    .clockOut(Instant.parse("2025-01-15T08:00:00Z"))
+                    .build();
+            when(employeeRepository.findById(employee.getId())).thenReturn(Optional.of(employee));
+            when(attendanceRepository.findByEmployeeIdAndWorkDate(employee.getId(), TODAY_TOKYO))
+                    .thenReturn(List.of(closedRecord));
+            when(attendanceRepository.save(any(AttendanceRecord.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            // Act
+            var result = service.clockIn(employee.getId());
+
+            // Assert
+            assertThat(result.workDate()).isEqualTo(TODAY_TOKYO);
+            assertThat(result.clockIn()).isEqualTo(FIXED_INSTANT);
+            assertThat(result.clockOut()).isNull();
         }
 
     }

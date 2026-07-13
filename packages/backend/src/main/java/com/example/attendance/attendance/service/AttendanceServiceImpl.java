@@ -54,6 +54,11 @@ public class AttendanceServiceImpl implements AttendanceService {
         var employee = findEmployeeOrThrow(employeeId);
         var today = LocalDate.now(clock);
 
+        var todayRecords = attendanceRepository.findByEmployeeIdAndWorkDate(employeeId, today);
+        if (AttendanceStatus.fromRecords(todayRecords) == AttendanceStatus.CLOCKED_IN) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Already clocked in");
+        }
+
         var now = Instant.now(clock);
         var record = AttendanceRecord.builder()
                 .id(UuidCreator.getTimeOrderedEpoch())
@@ -85,15 +90,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     public TodayStatusResponse getTodayStatus(UUID employeeId) {
         var today = LocalDate.now(clock);
         var records = attendanceRepository.findByEmployeeIdAndWorkDate(employeeId, today);
-
-        AttendanceStatus status;
-        if (records.isEmpty()) {
-            status = AttendanceStatus.NOT_CLOCKED_IN;
-        } else if (records.stream().anyMatch(r -> r.getClockOut() == null)) {
-            status = AttendanceStatus.CLOCKED_IN;
-        } else {
-            status = AttendanceStatus.CLOCKED_OUT;
-        }
+        var status = AttendanceStatus.fromRecords(records);
 
         var responses = records.stream()
                 .map(AttendanceRecordResponse::from)
