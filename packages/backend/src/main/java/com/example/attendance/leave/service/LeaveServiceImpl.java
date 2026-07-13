@@ -89,8 +89,13 @@ public class LeaveServiceImpl implements LeaveService {
 
     @Override
     @Transactional
-    public LeaveResponse cancel(UUID leaveId, Long version) {
+    public LeaveResponse cancel(UUID leaveId, UUID requesterId, Long version) {
         var leaveRequest = findLeaveRequestOrThrow(leaveId);
+
+        if (!leaveRequest.getRequester().getId().equals(requesterId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "本人の申請のみ取り下げ可能です");
+        }
 
         if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

@@ -14,8 +14,10 @@ export function useLeaves() {
 
   return useQuery({
     queryKey: [...LEAVES_KEY, user?.id],
-    // biome-ignore lint/style/noNonNullAssertion: guarded by enabled
-    queryFn: () => leaveApi.findByRequester(user!.id),
+    queryFn: () => {
+      if (!user) throw new Error("User not authenticated");
+      return leaveApi.findByRequester(user.id);
+    },
     enabled: !!user?.id,
   });
 }
@@ -25,8 +27,10 @@ export function useLeaveBalance() {
 
   return useQuery({
     queryKey: [...BALANCE_KEY, user?.id],
-    // biome-ignore lint/style/noNonNullAssertion: guarded by enabled
-    queryFn: () => leaveApi.getBalance(user!.id),
+    queryFn: () => {
+      if (!user) throw new Error("User not authenticated");
+      return leaveApi.getBalance(user.id);
+    },
     enabled: !!user?.id,
   });
 }
@@ -36,9 +40,10 @@ export function useCreateLeave() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: Omit<LeaveCreateRequest, "requesterId">) =>
-      // biome-ignore lint/style/noNonNullAssertion: user is available when mutation is called
-      leaveApi.create({ ...request, requesterId: user!.id }),
+    mutationFn: (request: Omit<LeaveCreateRequest, "requesterId">) => {
+      if (!user) throw new Error("User not authenticated");
+      return leaveApi.create({ ...request, requesterId: user.id });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: LEAVES_KEY });
       queryClient.invalidateQueries({ queryKey: BALANCE_KEY });
@@ -71,8 +76,10 @@ export function usePendingLeaves() {
 
   return useQuery({
     queryKey: [...PENDING_LEAVES_KEY, user?.id],
-    // biome-ignore lint/style/noNonNullAssertion: guarded by enabled
-    queryFn: () => leaveApi.findPending(user!.id),
+    queryFn: () => {
+      if (!user) throw new Error("User not authenticated");
+      return leaveApi.findPending(user.id);
+    },
     enabled: !!user?.isManager,
   });
 }
@@ -82,9 +89,10 @@ export function useApproveLeave() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, version }: { id: string; version: number }) =>
-      // biome-ignore lint/style/noNonNullAssertion: user is available when mutation is called
-      leaveApi.approve(id, user!.id, version),
+    mutationFn: ({ id, version }: { id: string; version: number }) => {
+      if (!user) throw new Error("User not authenticated");
+      return leaveApi.approve(id, user.id, version);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PENDING_LEAVES_KEY });
       queryClient.invalidateQueries({ queryKey: LEAVES_KEY });
@@ -102,9 +110,10 @@ export function useRejectLeave() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, reason, version }: { id: string; reason: string; version: number }) =>
-      // biome-ignore lint/style/noNonNullAssertion: user is available when mutation is called
-      leaveApi.reject(id, user!.id, reason, version),
+    mutationFn: ({ id, reason, version }: { id: string; reason: string; version: number }) => {
+      if (!user) throw new Error("User not authenticated");
+      return leaveApi.reject(id, user.id, reason, version);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PENDING_LEAVES_KEY });
       queryClient.invalidateQueries({ queryKey: LEAVES_KEY });

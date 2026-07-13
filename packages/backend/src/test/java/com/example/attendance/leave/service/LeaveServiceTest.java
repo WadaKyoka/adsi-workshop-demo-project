@@ -195,9 +195,31 @@ class LeaveServiceTest {
             when(leaveRequestRepository.save(any(LeaveRequest.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
-            var result = leaveService.cancel(leaveRequest.getId(), 0L);
+            var result = leaveService.cancel(leaveRequest.getId(), employee.getId(), 0L);
 
             assertThat(result.status()).isEqualTo("CANCELLED");
+        }
+
+        @Test
+        @DisplayName("異常: 他人の申請を取り下げ → 403")
+        void cancel_otherUser_throwsForbidden() {
+            var leaveRequest = LeaveRequest.builder()
+                    .id(UUID.randomUUID())
+                    .requester(employee)
+                    .leaveDate(LocalDate.of(2026, 7, 20))
+                    .leaveType(LeaveType.FULL)
+                    .status(LeaveStatus.PENDING)
+                    .version(0L)
+                    .createdAt(Instant.now())
+                    .updatedAt(Instant.now())
+                    .build();
+
+            when(leaveRequestRepository.findById(leaveRequest.getId()))
+                    .thenReturn(Optional.of(leaveRequest));
+
+            assertThatThrownBy(() -> leaveService.cancel(leaveRequest.getId(), manager.getId(), 0L))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .hasMessageContaining("本人");
         }
 
         @Test
@@ -217,7 +239,7 @@ class LeaveServiceTest {
             when(leaveRequestRepository.findById(leaveRequest.getId()))
                     .thenReturn(Optional.of(leaveRequest));
 
-            assertThatThrownBy(() -> leaveService.cancel(leaveRequest.getId(), 0L))
+            assertThatThrownBy(() -> leaveService.cancel(leaveRequest.getId(), employee.getId(), 0L))
                     .isInstanceOf(ResponseStatusException.class)
                     .hasMessageContaining("PENDING");
         }

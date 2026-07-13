@@ -13,7 +13,7 @@ public interface LeaveService {
 
     List<LeaveResponse> findByRequester(UUID requesterId);
 
-    LeaveResponse cancel(UUID leaveId, Long version);
+    LeaveResponse cancel(UUID leaveId, UUID requesterId, Long version);
 
     List<LeaveResponse> findPending(UUID managerId);
 
