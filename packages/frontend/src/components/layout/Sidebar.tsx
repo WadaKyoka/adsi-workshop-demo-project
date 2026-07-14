@@ -1,6 +1,16 @@
 "use client";
 
-import { BarChart3, Building2, CheckSquare, Clock, FileEdit, History, LayoutDashboard, Users } from "lucide-react";
+import {
+  BarChart3,
+  Building2,
+  CalendarDays,
+  CheckSquare,
+  Clock,
+  FileEdit,
+  History,
+  LayoutDashboard,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import {
   Sidebar,
@@ -23,16 +33,19 @@ export function AppSidebar() {
     { title: "打刻", href: "/attendance", icon: Clock },
     { title: "勤怠履歴", href: "/history", icon: History },
     { title: "修正申請", href: "/corrections", icon: FileEdit },
+    { title: "有給休暇", href: "/leaves", icon: CalendarDays },
   ];
 
   const managerItems = [
     { title: "承認", href: "/approvals", icon: CheckSquare },
+    { title: "有給承認", href: "/leaves/pending", icon: CalendarDays },
   ];
 
   const adminItems = [
     { title: "社員管理", href: "/admin/employees", icon: Users },
     { title: "部署管理", href: "/admin/departments", icon: Building2 },
     { title: "月次集計", href: "/admin/reports", icon: BarChart3 },
+    { title: "有給取得状況", href: "/leaves/summary", icon: CalendarDays },
   ];
 
   return (
@@ -59,7 +72,9 @@ export function AppSidebar() {
 
         {user?.isManager && (
           <SidebarGroup>
-            <SidebarGroupLabel className="bg-amber-100 rounded px-2">上長メニュー</SidebarGroupLabel>
+            <SidebarGroupLabel className="bg-amber-100 rounded px-2">
+              上長メニュー
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {managerItems.map((item) => (
