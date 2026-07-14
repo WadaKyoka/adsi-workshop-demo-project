@@ -80,7 +80,7 @@ class CorrectionControllerTest {
                 LocalDate.of(2025, 1, 15),
                 Instant.parse("2025-01-14T23:00:00Z"),
                 Instant.parse("2025-01-15T08:00:00Z"),
-                "打刻忘れ", CorrectionStatus.PENDING, null, 0L,
+                "打刻忘れ", null, CorrectionStatus.PENDING, null, 0L,
                 Instant.parse("2025-01-16T00:00:00Z")
         );
         when(correctionService.create(eq(EMPLOYEE_ID), any())).thenReturn(response);
@@ -113,7 +113,7 @@ class CorrectionControllerTest {
                 LocalDate.of(2025, 1, 15),
                 Instant.parse("2025-01-14T23:00:00Z"),
                 Instant.parse("2025-01-15T08:00:00Z"),
-                "打刻忘れ", CorrectionStatus.PENDING, null, 0L,
+                "打刻忘れ", null, CorrectionStatus.PENDING, null, 0L,
                 Instant.parse("2025-01-16T00:00:00Z")
         );
         when(correctionService.findByRequester(eq(EMPLOYEE_ID), any())).thenReturn(List.of(response));
@@ -134,7 +134,7 @@ class CorrectionControllerTest {
                 LocalDate.of(2025, 1, 15),
                 Instant.parse("2025-01-14T23:00:00Z"),
                 Instant.parse("2025-01-15T08:00:00Z"),
-                "打刻忘れ", 0L,
+                "打刻忘れ", null, 0L,
                 Instant.parse("2025-01-16T00:00:00Z")
         );
         when(correctionService.findPending(MANAGER_ID)).thenReturn(List.of(response));
@@ -156,7 +156,7 @@ class CorrectionControllerTest {
                 LocalDate.of(2025, 1, 15),
                 Instant.parse("2025-01-14T23:00:00Z"),
                 Instant.parse("2025-01-15T08:00:00Z"),
-                "打刻忘れ", CorrectionStatus.APPROVED, null, 1L,
+                "打刻忘れ", null, CorrectionStatus.APPROVED, null, 1L,
                 Instant.parse("2025-01-16T00:00:00Z")
         );
         when(correctionService.approve(CORRECTION_ID, MANAGER_ID, 0L)).thenReturn(response);
@@ -179,7 +179,7 @@ class CorrectionControllerTest {
                 LocalDate.of(2025, 1, 15),
                 Instant.parse("2025-01-14T23:00:00Z"),
                 Instant.parse("2025-01-15T08:00:00Z"),
-                "打刻忘れ", CorrectionStatus.REJECTED, "不備あり", 1L,
+                "打刻忘れ", null, CorrectionStatus.REJECTED, "不備あり", 1L,
                 Instant.parse("2025-01-16T00:00:00Z")
         );
         when(correctionService.reject(eq(CORRECTION_ID), eq(MANAGER_ID), eq("不備あり"), eq(0L)))

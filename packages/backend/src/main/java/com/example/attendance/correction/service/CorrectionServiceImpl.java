@@ -60,6 +60,7 @@ public class CorrectionServiceImpl implements CorrectionService {
                 .correctedClockIn(request.correctedClockIn())
                 .correctedClockOut(request.correctedClockOut())
                 .reason(request.reason())
+                .memo(request.memo())
                 .status(CorrectionStatus.PENDING)
                 .build();
 
@@ -111,6 +112,7 @@ public class CorrectionServiceImpl implements CorrectionService {
             var record = correction.getAttendanceRecord();
             record.setClockIn(correction.getCorrectedClockIn());
             record.setClockOut(correction.getCorrectedClockOut());
+            record.setMemo(correction.getMemo());
             record.setCorrected(true);
             attendanceRecordRepository.save(record);
         } else {
@@ -120,6 +122,7 @@ public class CorrectionServiceImpl implements CorrectionService {
                     .workDate(correction.getTargetDate())
                     .clockIn(correction.getCorrectedClockIn())
                     .clockOut(correction.getCorrectedClockOut())
+                    .memo(correction.getMemo())
                     .corrected(true)
                     .build();
             var saved = attendanceRecordRepository.save(newRecord);

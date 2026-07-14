@@ -1,7 +1,7 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,7 @@ export function CorrectionForm() {
   const [clockIn, setClockIn] = useState("");
   const [clockOut, setClockOut] = useState("");
   const [reason, setReason] = useState("");
+  const [memo, setMemo] = useState("");
 
   const isValid = targetDate && clockIn && clockOut && reason.trim().length > 0;
 
@@ -32,6 +33,7 @@ export function CorrectionForm() {
         correctedClockIn: toIsoInstant(targetDate, clockIn),
         correctedClockOut: toIsoInstant(targetDate, clockOut),
         reason: reason.trim(),
+        memo: memo.trim() || undefined,
       },
       {
         onSuccess: () => {
@@ -77,6 +79,18 @@ export function CorrectionForm() {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="memo">メモ</Label>
+        <Input
+          id="memo"
+          type="text"
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+          maxLength={100}
+          placeholder="客先直行、午後有給 等（任意）"
+        />
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="reason">修正理由</Label>
         <textarea
           id="reason"
@@ -94,11 +108,7 @@ export function CorrectionForm() {
         <Button type="submit" disabled={!isValid || createMutation.isPending}>
           {createMutation.isPending ? "送信中..." : "申請する"}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push("/corrections")}
-        >
+        <Button type="button" variant="outline" onClick={() => router.push("/corrections")}>
           キャンセル
         </Button>
       </div>

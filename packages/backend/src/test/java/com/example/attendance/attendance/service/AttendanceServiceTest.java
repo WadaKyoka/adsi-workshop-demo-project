@@ -87,16 +87,38 @@ class AttendanceServiceTest {
                     .thenReturn(List.of());
 
             // Act
-            var result = service.clockIn(employee.getId());
+            var result = service.clockIn(employee.getId(), null);
 
             // Assert
             assertThat(result.workDate()).isEqualTo(TODAY_TOKYO);
             assertThat(result.clockIn()).isEqualTo(FIXED_INSTANT);
             assertThat(result.clockOut()).isNull();
+            assertThat(result.memo()).isNull();
 
             var captor = ArgumentCaptor.forClass(AttendanceRecord.class);
             verify(attendanceRepository).save(captor.capture());
             assertThat(captor.getValue().getEmployee().getId()).isEqualTo(employee.getId());
+        }
+
+        @Test
+        @DisplayName("出勤打刻時にメモが保存される")
+        void clockIn_withMemo_savesMemo() {
+            // Arrange
+            when(employeeRepository.findById(employee.getId())).thenReturn(Optional.of(employee));
+            when(attendanceRepository.save(any(AttendanceRecord.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+            when(attendanceRepository.findByEmployeeIdAndWorkDate(employee.getId(), TODAY_TOKYO))
+                    .thenReturn(List.of());
+
+            // Act
+            var result = service.clockIn(employee.getId(), "客先直行");
+
+            // Assert
+            assertThat(result.memo()).isEqualTo("客先直行");
+
+            var captor = ArgumentCaptor.forClass(AttendanceRecord.class);
+            verify(attendanceRepository).save(captor.capture());
+            assertThat(captor.getValue().getMemo()).isEqualTo("客先直行");
         }
 
         @Test
@@ -114,7 +136,7 @@ class AttendanceServiceTest {
                     .thenReturn(List.of(openRecord));
 
             // Act & Assert
-            assertThatThrownBy(() -> service.clockIn(employee.getId()))
+            assertThatThrownBy(() -> service.clockIn(employee.getId(), null))
                     .isInstanceOf(ResponseStatusException.class)
                     .hasMessageContaining("Already clocked in");
         }
@@ -137,7 +159,7 @@ class AttendanceServiceTest {
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
             // Act
-            var result = service.clockIn(employee.getId());
+            var result = service.clockIn(employee.getId(), null);
 
             // Assert
             assertThat(result.workDate()).isEqualTo(TODAY_TOKYO);
@@ -167,10 +189,60 @@ class AttendanceServiceTest {
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
             // Act
-            var result = service.clockOut(employee.getId());
+            var result = service.clockOut(employee.getId(), null);
 
             // Assert
             assertThat(result.clockOut()).isEqualTo(FIXED_INSTANT);
+        }
+
+        @Test
+        @DisplayName("退勤打刻時にメモが上書き保存される")
+        void clockOut_withMemo_savesMemo() {
+            // Arrange
+            var openRecord = AttendanceRecord.builder()
+                    .id(UUID.randomUUID())
+                    .employee(employee)
+                    .workDate(TODAY_TOKYO)
+                    .clockIn(Instant.parse("2025-01-14T23:00:00Z"))
+                    .memo("客先直行")
+                    .build();
+            when(attendanceRepository.findByEmployeeIdAndWorkDateAndClockOutIsNull(employee.getId(), TODAY_TOKYO))
+                    .thenReturn(Optional.of(openRecord));
+            when(attendanceRepository.save(any(AttendanceRecord.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            // Act
+            var result = service.clockOut(employee.getId(), "午後有給");
+
+            // Assert
+            assertThat(result.memo()).isEqualTo("午後有給");
+
+            var captor = ArgumentCaptor.forClass(AttendanceRecord.class);
+            verify(attendanceRepository).save(captor.capture());
+            assertThat(captor.getValue().getMemo()).isEqualTo("午後有給");
+        }
+
+        @Test
+        @DisplayName("退勤打刻時にmemo=nullなら既存メモが維持される")
+        void clockOut_withNullMemo_preservesExistingMemo() {
+            // Arrange
+            var openRecord = AttendanceRecord.builder()
+                    .id(UUID.randomUUID())
+                    .employee(employee)
+                    .workDate(TODAY_TOKYO)
+                    .clockIn(Instant.parse("2025-01-14T23:00:00Z"))
+                    .memo("客先直行")
+                    .build();
+            when(attendanceRepository.findByEmployeeIdAndWorkDateAndClockOutIsNull(employee.getId(), TODAY_TOKYO))
+                    .thenReturn(Optional.of(openRecord));
+            when(attendanceRepository.save(any(AttendanceRecord.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            // Act
+            var result = service.clockOut(employee.getId(), null);
+
+            // Assert
+            assertThat(result.memo()).isEqualTo("客先直行");
         }
 
         @Test
@@ -181,7 +253,7 @@ class AttendanceServiceTest {
                     .thenReturn(Optional.empty());
 
             // Act & Assert
-            assertThatThrownBy(() -> service.clockOut(employee.getId()))
+            assertThatThrownBy(() -> service.clockOut(employee.getId(), null))
                     .isInstanceOf(ResponseStatusException.class)
                     .hasMessageContaining("No active clock-in found");
         }
